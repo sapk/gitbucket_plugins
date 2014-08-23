@@ -1,0 +1,23 @@
+@(gists: Seq[Map[String, String]])(implicit context: app.Context)
+@import context._
+@import view.helpers._
+<div class="container">
+  <h1>GitBucket Snippets</h1>
+</div>
+<hr style="margin-bottom: 20px;"/>
+<div class="container">
+  @gists.map { gist =>
+    <div>
+      <div>
+        <a href="/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
+        <a href="/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
+      </div>
+      <div class="muted">
+        Created at @gist("REGISTERED_DATE")
+      </div>
+      <div>
+        <pre class="prettyprint linenums" style="padding-left: 25px;">@Html(gist("CODE"))</pre>
+      </div>
+    </div>
+  }
+</div>

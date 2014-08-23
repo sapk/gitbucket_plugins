@@ -1,0 +1,67 @@
+@(active: String, gist: Map[String, String], files: Seq[(String, String)])(implicit context: app.Context)
+@import context._
+@import view.helpers._
+
+@sidemenu(path: String, name: String, label: String, count: Int = 0) = {
+  <li @if(active == name){class="active"}>
+    <div class="@if(active == name){margin} else {gradient} pull-left"></div>
+    <a href="@context.path/gist/@path">
+      @if(active == name){
+        <img src="@assets/common/images/menu-@{name}-active.png">
+      } else {
+        <img src="@assets/common/images/menu-@{name}-active.png" class="menu-icon-active" style="display:none;">
+        <img src="@assets/common/images/menu-@{name}.png"        class="menu-icon">
+      }
+      @label
+      @if(count > 0){
+        <div class="pull-right"><span class="label">@count</span></div>
+      }
+    </a>
+  </li>
+}
+
+<div class="container">
+  <div class="head">
+    <a href="@path/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
+    <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
+    <div class="pull-right">
+      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/edit" class="btn">Edit</a>
+      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn">Delete</a>
+    </div>
+  </div>
+  <div class="muted">
+    Created at @gist("REGISTERED_DATE")
+  </div>
+</div>
+<hr style="margin-bottom: 20px;"/>
+<div class="container">
+  <div style="width: 170px;" class="pull-right">
+    <ul class="sidemenu">
+      <li style="height: 12px"><div class="gradient pull-left" style="height: 12px"></div></li>
+      @sidemenu(s"${gist("USER_NAME")}/${gist("REPOSITORY_NAME")}",           "code"    , "Code")
+      @sidemenu(s"${gist("USER_NAME")}/${gist("REPOSITORY_NAME")}/revisions", "revision", "Revision")
+    </ul>
+  </div>
+  <div style="margin-right: 180px;">
+    <div>
+      @gist("DESCRIPTION")
+    </div>
+    @files.map { case (fileName, content) =>
+      <table class="table table-bordered blobview">
+        <tr>
+          <th style="font-weight: normal;">
+            @fileName
+            <div class="pull-right">
+              <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/raw/@fileName" class="btn btn-mini">Raw</a>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <td>
+            <pre class="prettyprint linenums blob">@content</pre>
+          </td>
+        </tr>
+      </table>
+    }
+  </div>
+</div>
