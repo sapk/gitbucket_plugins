@@ -192,6 +192,30 @@ pluginDef.addGlobalAction("GET", "/gist/.*/delete"){ (request, response, context
   }
 }
 
+pluginDef.addGlobalAction("GET", "/gist/.*/secret"){ (request, response, context) =>
+  val dim = request.getRequestURI.split("/")
+  val userName = dim(2)
+  val repoName = dim(3)
+
+  if(isEditable(userName, context)){
+    db.update("UPDATE GIST SET PRIVATE = TRUE WHERE USER_NAME = ? AND REPOSITORY_NAME = ?", userName, repoName)
+  }
+
+  Redirect(s"${context.path}/gist/${userName}/${repoName}")
+}
+
+pluginDef.addGlobalAction("GET", "/gist/.*/public"){ (request, response, context) =>
+  val dim = request.getRequestURI.split("/")
+  val userName = dim(2)
+  val repoName = dim(3)
+
+  if(isEditable(userName, context)){
+    db.update("UPDATE GIST SET PRIVATE = FALSE WHERE USER_NAME = ? AND REPOSITORY_NAME = ?", userName, repoName)
+  }
+
+  Redirect(s"${context.path}/gist/${userName}/${repoName}")
+}
+
 
 /**
  * Displays specified Gist or the list of specified user's Gist

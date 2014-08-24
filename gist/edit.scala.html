@@ -15,7 +15,11 @@
           <span class="label label-warning">Secret</span>
         }
         <div class="pull-right">
-          <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/secret" class="btn">Make secret</a>
+          @if(x("PRIVATE").toBoolean){
+            <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/public" class="btn">Make public</a>
+          } else {
+            <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/secret" class="btn">Make secret</a>
+          }
           <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
         </div>
       </div>

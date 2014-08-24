@@ -24,7 +24,7 @@
   <div class="head">
     <a href="@path/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
     <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
-    @if(gist("PRIVATE")){
+    @if(gist("PRIVATE").toBoolean){
       <span class="label label-warning">Secret</span>
     }
     @if(editable){
