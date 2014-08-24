@@ -161,9 +161,31 @@ pluginDef.addGlobalAction("POST", "/gist/.*/edit"){ (request, response, context)
       refUpdate.update()
     }
 
-    Redirect(s"/gist/${loginAccount.userName}/${repoName}")
+    Redirect(s"${context.path}/gist/${loginAccount.userName}/${repoName}")
   }
 }
+
+/**
+ * Deletes the specified Gist
+ */
+pluginDef.addGlobalAction("GET", "/gist/.*/delete"){ (request, response, context) =>
+  val dim = request.getRequestURI.split("/")
+  val userName = dim(2)
+  val repoName = dim(3)
+
+  if(context.loginAccount.isDefined){
+    val loginAccount = context.loginAccount.get
+    val gitdir = new File(rootdir, userName + "/" + repoName)
+
+    db.update("DELETE FROM GIST_COMMENT WHERE USER_NAME = ? AND REPOSITORY_NAME = ?", userName, repoName)
+    db.update("DELETE FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?", userName, repoName)
+
+    org.apache.commons.io.FileUtils.deleteDirectory(gitdir)
+
+    Redirect(s"${context.path}/gist/${userName}")
+  }
+}
+
 
 /**
  * Displays specified Gist or the list of specified user's Gist
