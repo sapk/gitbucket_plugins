@@ -1,114 +1,46 @@
-@(gist: Option[Map[String, String]], files: Seq[(String, util.JGitUtil.ContentInfo)])(implicit context: app.Context)
+@(i: Int, fileName: String, content: util.JGitUtil.ContentInfo)(implicit context: app.Context)
 @import context._
 @import view.helpers._
-<div class="container">
-  <h1>GitBucket Snippets</h1>
-</div>
-<hr style="margin-bottom: 20px;"/>
-<div class="container">
-    <form method="POST" action="@gist.map(x => s"/gist/${x("USER_NAME")}/${x("REPOSITORY_NAME")}/edit").getOrElse("/gist/_new")">
-      <input type="text" name="description" id="description" style="width: 900px;" value="@gist.map(_("DESCRIPTION"))" placeholder="Snippet descriptions..."/>
-      @files.zipWithIndex.map { case ((fileName, content), i) =>
-        <table class="table table-bordered">
-          <tr>
-            <th>
-              <div class="pull-right">
-                <select id="wrap-@i" class="input-medium" style="margin-bottom: 0px; height: 26px; padding: 0px;">
-                  <optgroup label="Line Wrap Mode">
-                    <option value="false">No wrap</option>
-                    <option value="true">Soft wrap</option>
-                  </optgroup>
-                </select>
-              </div>
-              <input type="text" id="fileName-@i" name="fileName-@i" class="input-medium" value="@fileName" placeholder="Name this file..." style="margin-bottom: 0px;">
-            </th>
-          </tr>
-          <tr>
-            <td>
-              <div id="editor-@i" class="editor" data-index="@i" style="width: 100%; height: 400px;"></div>
-            </td>
-          </tr>
-        </table>
-        <input type="hidden" id="content-@i" name="content-@i" value=""/>
-        <input type="hidden" id="charset-@i" name="charset-@i" value="@content.charset"/>
-        <input type="hidden" id="lineSeparator-@i" name="lineSeparator-@i" value="@content.lineSeparator"/>
-        <input type="hidden" id="initial-@i" value="@content.content"/>
-      }
-      <div>
-        <input type="button" value="Add file" class="btn">
-        <div class="pull-right">
-            @gist.map { gist =>
-              <a href="/gist/@gist("USER_NAME")/gist("REPOSITORY_NAME")" class="btn">Cancel</a>
-              <input type="submit" value="Update" class="btn btn-success submit_snippet" id="update_snippet">
-            }.getOrElse {
-              <input type="submit" value="Create private Snippet" class="btn submit_snippet" id="create_private_snippet">
-              <input type="submit" value="Create public Snippet" class="btn submit_snippet" id="create_public_snippet">
-            }
-        </div>
+<table class="table table-bordered">
+  <tr>
+    <th>
+      <div class="pull-right">
+        <select id="wrap-@i" class="input-medium" style="margin-bottom: 0px; height: 26px; padding: 0px;">
+          <optgroup label="Line Wrap Mode">
+            <option value="false">No wrap</option>
+            <option value="true">Soft wrap</option>
+          </optgroup>
+        </select>
       </div>
-      @if(gist.isEmpty){
-        <input type="hidden" id="private" name="private" value="false"/>
-      }
-      <input type="hidden" id="count" name="count" value="@files.size"/>
-    </form>
-</div>
-
-<script src="@assets/vendors/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-<script type="text/javascript" src="@assets/vendors/jsdifflib/difflib.js"></script>
-<script type="text/javascript" src="@assets/vendors/jsdifflib/diffview.js"></script>
-<link href="@assets/vendors/jsdifflib/diffview.css" type="text/css" rel="stylesheet" />
+      <input type="text" id="fileName-@i" name="fileName-@i" class="input-medium" value="@fileName" placeholder="Name this file..." style="margin-bottom: 0px;">
+    </th>
+  </tr>
+  <tr>
+    <td>
+      <div id="editor-@i" class="editor" data-index="@i" style="width: 100%; height: 400px;"></div>
+    </td>
+  </tr>
+</table>
+<input type="hidden" id="content-@i" name="content-@i" value=""/>
+<input type="hidden" id="charset-@i" name="charset-@i" value="@content.charset"/>
+<input type="hidden" id="lineSeparator-@i" name="lineSeparator-@i" value="@content.lineSeparator"/>
+<input type="hidden" id="initial-@i" value="@content.content"/>
 <script>
 $(function(){
-  @files.zipWithIndex.map { case ((fileName, content), i) =>
-    $('#editor-@i').text($('#initial-@i').val());
+  $('#editor-@i').text($('#initial-@i').val());
 
-    var editor = ace.edit('editor-@i');
-    editor.setTheme("ace/theme/monokai");
+  var editor = ace.edit('editor-@i');
+  editor.setTheme("ace/theme/monokai");
 
-    @if(fileName.nonEmpty){
-      editor.getSession().setMode("ace/mode/@editorType(fileName)");
-    }
-
-    $('#wrap-@i').change(function(){
-      if($('#wrap-@i option:selected').val() == 'true'){
-        editor.getSession().setUseWrapMode(true);
-      } else {
-        editor.getSession().setUseWrapMode(false);
-      }
-    });
+  @if(fileName.nonEmpty){
+    editor.getSession().setMode("ace/mode/@editorType(fileName)");
   }
 
-@*
-  editor.on('change', function(){
-    updateCommitButtonStatus();
-  });
-
-  function updateCommitButtonStatus(){
-    if(editor.getValue() == $('#initial').val() && $('#newFileName').val() == $('#oldFileName').val()){
-      $('#commit').attr('disabled', true);
+  $('#wrap-@i').change(function(){
+    if($('#wrap-@i option:selected').val() == 'true'){
+      editor.getSession().setUseWrapMode(true);
     } else {
-      $('#commit').attr('disabled', false);
-    }
-  }
-
-
-  $('#newFileName').watch(function(){
-    updateCommitButtonStatus();
-  });
-*@
-
-  $('#create_private_snippet').click(function(){
-    $('#private').val('true');
-  });
-
-  $('#create_public_snippet').click(function(){
-    $('#private').val('false');
-  });
-
-  $('.submit_snippet').click(function(){
-    @files.zipWithIndex.map { case ((fileName, content), i) =>
-      var editor = ace.edit('editor-@i');
-      $('#content-@i').val(editor.getValue());
+      editor.getSession().setUseWrapMode(false);
     }
   });
 });

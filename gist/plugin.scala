@@ -28,11 +28,11 @@ $('div.navbar div.nav-collapse').prepend($('<a href="/gist" class="username menu
  */
 pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
   if(context.loginAccount.isDefined){
-    editor(None, Seq(("", JGitUtil.ContentInfo("text", None, Some("UTF-8")))))(context)
+    edit(None, Seq(("", JGitUtil.ContentInfo("text", None, Some("UTF-8")))))(context)
   } else {
     val result = db.select("SELECT * FROM GIST WHERE PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC")
 
-    val gists = result.map { gist =>
+    val gists = result.flatMap { gist =>
       val userName = gist("USER_NAME")
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
@@ -43,10 +43,10 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          gist + ("CODE" -> source)
+          Some(gist + ("CODE" -> source))
         }
       } else {
-        gist + ("CODE" -> "")
+        None
       }
     }
 
@@ -73,9 +73,17 @@ pluginDef.addGlobalAction("GET", "/gist/.*/edit"){ (request, response, context) 
         file.name -> JGitUtil.getContentInfo(git, file.name, file.id)
       }
 
-      editor(Some(gist), files)(context)
+      edit(Some(gist), files)(context)
     }
   }
+}
+
+/**
+ * Returns the HTML fragment for adding file.
+ */
+pluginDef.addGlobalAction("GET", "/gist/_add"){ (request, response, context) =>
+  val count = request.getParameter("count").toInt
+  Fragment(editor(count, "", JGitUtil.ContentInfo("text", None, Some("UTF-8")))(context))
 }
 
 /**
@@ -84,7 +92,7 @@ pluginDef.addGlobalAction("GET", "/gist/.*/edit"){ (request, response, context) 
 pluginDef.addGlobalAction("POST", "/gist/_new"){ (request, response, context) =>
   if(context.loginAccount.isDefined){
     val loginAccount = context.loginAccount.get
-    val files        = getFileParameters(request)
+    val files        = getFileParameters(request, true)
     val isPrivate    = request.getParameter("private")
     val description  = request.getParameter("description")
 
@@ -129,7 +137,7 @@ pluginDef.addGlobalAction("POST", "/gist/.*/edit"){ (request, response, context)
 
   if(context.loginAccount.isDefined){
     val loginAccount = context.loginAccount.get
-    val files        = getFileParameters(request)
+    val files        = getFileParameters(request, true)
     val isPrivate    = request.getParameter("private")
     val description  = request.getParameter("description")
     val gitdir       = new File(rootdir, userName + "/" + repoName)
@@ -208,15 +216,27 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
   }
 }
 
-def getFileParameters(request: javax.servlet.http.HttpServletRequest): Seq[(String, String)] = {
+def getFileParameters(request: javax.servlet.http.HttpServletRequest, flatten: Boolean): Seq[(String, String)] = {
   val count = request.getParameter("count").toInt
-  (0 to count - 1).flatMap { i =>
-    val fileName = request.getParameter(s"fileName-${i}")
-    val content  = request.getParameter(s"content-${i}")
-    if(fileName.nonEmpty && content.nonEmpty){
-      Some((fileName, content))
-    } else {
-      None
+  if(flatten){
+    (0 to count - 1).flatMap { i =>
+      val fileName = request.getParameter(s"fileName-${i}")
+      val content  = request.getParameter(s"content-${i}")
+      if(fileName.nonEmpty && content.nonEmpty){
+        Some((fileName, content))
+      } else {
+        None
+      }
+    }
+  } else {
+    (0 to count - 1).map { i =>
+      val fileName = request.getParameter(s"fileName-${i}")
+      val content  = request.getParameter(s"content-${i}")
+      if(fileName.nonEmpty && content.nonEmpty){
+        (fileName, content)
+      } else {
+        ("", "")
+      }
     }
   }
 }

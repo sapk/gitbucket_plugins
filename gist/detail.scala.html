@@ -26,7 +26,7 @@
     <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
     <div class="pull-right">
       <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/edit" class="btn">Edit</a>
-      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn">Delete</a>
+      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
     </div>
   </div>
   <div class="muted">
@@ -65,3 +65,10 @@
     }
   </div>
 </div>
+<script>
+$(function(){
+  $('#delete').click(function(){
+    return confirm('Are you positive you want to delete this Gist?');
+  });
+});
+</script>
