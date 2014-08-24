@@ -16,6 +16,8 @@ if(!rootdir.exists){
   rootdir.mkdirs()
 }
 
+val Limit = 10
+
 /**
  *
  */
@@ -30,9 +32,18 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
   if(context.loginAccount.isDefined){
     edit(None, Seq(("", JGitUtil.ContentInfo("text", None, Some("UTF-8")))))(context)
   } else {
-    val result = db.select("SELECT * FROM GIST WHERE PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC")
+    val page = request.getParameter("page") match {
+      case ""|null => 1
+      case s => s.toInt
+    }
+    val result = db.select(
+      "SELECT * FROM GIST WHERE PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC LIMIT ? OFFSET ?",
+      Limit, (page - 1) * Limit)
 
-    val gists = result.flatMap { gist =>
+    val count = db.select(
+      "SELECT COUNT(*) AS COUNT FROM GIST WHERE PRIVATE = FALSE").head.apply("COUNT").toInt
+
+    val gists = result.map { gist =>
       val userName = gist("USER_NAME")
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
@@ -43,14 +54,14 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          Some(gist + ("CODE" -> source))
+          gist + ("CODE" -> source)
         }
       } else {
-        None
+        gist + ("CODE" -> "Repository is not found!")
       }
     }
 
-    list(gists)(context)
+    list(gists, page, page * Limit < count)(context)
   }
 }
 
@@ -225,18 +236,37 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
   if(dim.length == 3){
     val userName = dim(2)
 
-    val result = if(context.loginAccount.isDefined){
-      db.select("""
-        SELECT * FROM GIST WHERE USER_NAME = ? AND (USER_NAME = ? OR PRIVATE = FALSE)
-        ORDER BY REGISTERED_DATE DESC
-      """, userName, context.loginAccount.get.userName)
-    } else {
-      db.select("""
-        SELECT * FROM GIST WHERE USER_NAME = ? AND PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC
-      """, userName)
+    val page = request.getParameter("page") match {
+      case ""|null => 1
+      case s => s.toInt
     }
 
-    val gists = result.flatMap { gist =>
+    val result: (Seq[Map[String, String]], Int)  = if(context.loginAccount.isDefined){
+      val gists = db.select("""
+        SELECT * FROM GIST WHERE USER_NAME = ? AND (USER_NAME = ? OR PRIVATE = FALSE)
+        ORDER BY REGISTERED_DATE DESC LIMIT ? OFFSET ?
+      """, userName, context.loginAccount.get.userName, Limit, (page - 1) * Limit)
+
+      val count = db.select("""
+        SELECT COUNT(*) AS COUNT FROM GIST WHERE USER_NAME = ? AND (USER_NAME = ? OR PRIVATE = FALSE)
+      """, userName, context.loginAccount.get.userName).head.apply("COUNT").toInt
+
+      (gists, count)
+
+    } else {
+      val gists = db.select("""
+        SELECT * FROM GIST WHERE USER_NAME = ? AND PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC
+        LIMIT ? OFFSET ?
+      """, userName, Limit, (page - 1) * Limit)
+
+      val count = db.select("""
+        SELECT COUNT(*) AS COUNT FROM GIST WHERE USER_NAME = ? AND PRIVATE = FALSE
+      """, userName).head.apply("COUNT").toInt
+
+      (gists, count)
+    }
+
+    val gists = result._1.map { gist =>
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
       if(gitdir.exists){
@@ -246,14 +276,14 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          Some(gist + ("CODE" -> source))
+          gist + ("CODE" -> source)
         }
       } else {
-        None
+        gist + ("CODE" -> "Repository is not found!")
       }
     }
 
-    list(gists)(context)
+    list(gists, page, page * Limit < result._2)(context) // TODO Paging
 
   } else {
     val userName = dim(2)

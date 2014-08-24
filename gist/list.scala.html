@@ -1,11 +1,11 @@
-@(gists: Seq[Map[String, String]])(implicit context: app.Context)
+@(gists: Seq[Map[String, String]], page: Int, hasNext: Boolean)(implicit context: app.Context)
 @import context._
 @import view.helpers._
 <div class="container">
   <h1>GitBucket Snippets</h1>
 </div>
 <hr style="margin-bottom: 20px;"/>
-<div class="container">
+<div class="container body">
   @gists.map { gist =>
     <div>
       <div>
@@ -26,4 +26,8 @@
       </div>
     </div>
   }
+  <div class="btn-group">
+    <button class="btn" onclick="location.href='?page=@{page - 1}'"@if(page <= 1){ disabled="true"}>Newer</button>
+    <button class="btn" onclick="location.href='?page=@{page + 1}'"@if(!hasNext){ disabled="true"}>Older</button>
+  </div>
 </div>
