@@ -1,4 +1,4 @@
-@(active: String, gist: Map[String, String], files: Seq[(String, String)])(implicit context: app.Context)
+@(active: String, gist: Map[String, String], files: Seq[(String, String)], editable: Boolean)(implicit context: app.Context)
 @import context._
 @import view.helpers._
 
@@ -24,10 +24,15 @@
   <div class="head">
     <a href="@path/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
     <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
-    <div class="pull-right">
-      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/edit" class="btn">Edit</a>
-      <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
-    </div>
+    @if(gist("PRIVATE")){
+      <span class="label label-warning">Secret</span>
+    }
+    @if(editable){
+      <div class="pull-right">
+        <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/edit" class="btn">Edit</a>
+        <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
+      </div>
+    }
   </div>
   <div class="muted">
     Created at @gist("REGISTERED_DATE")

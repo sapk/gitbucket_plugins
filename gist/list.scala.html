@@ -11,6 +11,9 @@
       <div>
         <a href="/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
         <a href="/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
+        @if(gist("PRIVATE").toBoolean){
+          <span class="label label-warning">Secret</span>
+        }
       </div>
       <div class="muted">
         Created at @gist("REGISTERED_DATE")

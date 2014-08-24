@@ -55,26 +55,30 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
 }
 
 /**
- *
+ * Displays the Gist editing form
  */
 pluginDef.addGlobalAction("GET", "/gist/.*/edit"){ (request, response, context) =>
   val dim = request.getRequestURI.split("/")
   val userName = dim(2)
   val repoName = dim(3)
 
-  val gitdir = new File(rootdir, userName + "/" + repoName)
-  if(gitdir.exists){
-    ControlUtil.using(Git.open(gitdir)){ git =>
-      val gist: Map[String, String] = db.select("""
-        SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?
-      """, userName, repoName).head
+  if(isEditable(userName, context)){
+    val gitdir = new File(rootdir, userName + "/" + repoName)
+    if(gitdir.exists){
+      ControlUtil.using(Git.open(gitdir)){ git =>
+        val gist: Map[String, String] = db.select("""
+          SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?
+        """, userName, repoName).head
 
-      val files: Seq[(String, JGitUtil.ContentInfo)] = JGitUtil.getFileList(git, "master", ".").map { file =>
-        file.name -> JGitUtil.getContentInfo(git, file.name, file.id)
+        val files: Seq[(String, JGitUtil.ContentInfo)] = JGitUtil.getFileList(git, "master", ".").map { file =>
+          file.name -> JGitUtil.getContentInfo(git, file.name, file.id)
+        }
+
+        edit(Some(gist), files)(context)
       }
-
-      edit(Some(gist), files)(context)
     }
+  } else {
+    // TODO Permission Error
   }
 }
 
@@ -135,7 +139,7 @@ pluginDef.addGlobalAction("POST", "/gist/.*/edit"){ (request, response, context)
   val userName = dim(2)
   val repoName = dim(3)
 
-  if(context.loginAccount.isDefined){
+  if(isEditable(userName, context)){
     val loginAccount = context.loginAccount.get
     val files        = getFileParameters(request, true)
     val isPrivate    = request.getParameter("private")
@@ -162,6 +166,8 @@ pluginDef.addGlobalAction("POST", "/gist/.*/edit"){ (request, response, context)
     }
 
     Redirect(s"${context.path}/gist/${loginAccount.userName}/${repoName}")
+  } else {
+    // TODO Permission Error
   }
 }
 
@@ -173,7 +179,7 @@ pluginDef.addGlobalAction("GET", "/gist/.*/delete"){ (request, response, context
   val userName = dim(2)
   val repoName = dim(3)
 
-  if(context.loginAccount.isDefined){
+  if(isEditable(userName, context)){
     val loginAccount = context.loginAccount.get
     val gitdir = new File(rootdir, userName + "/" + repoName)
 
@@ -195,11 +201,18 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
   if(dim.length == 3){
     val userName = dim(2)
 
-    val result = db.select("""
-      SELECT * FROM GIST WHERE USER_NAME = ? ORDER BY REGISTERED_DATE DESC
-    """, userName)
+    val result = if(context.loginAccount.isDefined){
+      db.select("""
+        SELECT * FROM GIST WHERE USER_NAME = ? AND (USER_NAME = ? OR PRIVATE = FALSE)
+        ORDER BY REGISTERED_DATE DESC
+      """, userName, context.loginAccount.get.userName)
+    } else {
+      db.select("""
+        SELECT * FROM GIST WHERE USER_NAME = ? AND PRIVATE = FALSE ORDER BY REGISTERED_DATE DESC
+      """, userName)
+    }
 
-    val gists = result.map { gist =>
+    val gists = result.flatMap { gist =>
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
       if(gitdir.exists){
@@ -209,10 +222,10 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          gist + ("CODE" -> source)
+          Some(gist + ("CODE" -> source))
         }
       } else {
-        gist + ("CODE" -> "")
+        None
       }
     }
 
@@ -224,15 +237,20 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
     val gitdir = new File(rootdir, userName + "/" + repoName)
     if(gitdir.exists){
       ControlUtil.using(Git.open(gitdir)){ git =>
-        val gist: Map[String, String] = db.select("""
-          SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?
-        """, userName, repoName).head
+        val gist: Map[String, String] =
+          db.select("""
+            SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?
+          """, userName, repoName).head
 
-        val files: Seq[(String, String)] = JGitUtil.getFileList(git, "master", ".").map { file =>
-          file.name -> StringUtil.convertFromByteArray(JGitUtil.getContentFromId(git, file.id, true).get)
+        if(!gist("PRIVATE").toBoolean || context.loginAccount.exists(x => x.isAdmin || x.userName == userName)){
+          val files: Seq[(String, String)] = JGitUtil.getFileList(git, "master", ".").map { file =>
+            file.name -> StringUtil.convertFromByteArray(JGitUtil.getContentFromId(git, file.id, true).get)
+          }
+
+          detail("code", gist, files, isEditable(userName, context))(context)
+        } else {
+          // TODO Permission Error
         }
-
-        detail("code", gist, files)(context)
       }
     }
   }
@@ -281,6 +299,12 @@ def commitFiles(git: Git, loginAccount: Account, message: String, files: Seq[(St
   inserter.release()
 
   commitId
+}
+
+def isEditable(userName: String, context: app.Context): Boolean = {
+  context.loginAccount.map { loginAccount =>
+    loginAccount.isAdmin || loginAccount.userName == userName
+  }.getOrElse(false)
 }
 
 PluginSystem.install(pluginDef)
