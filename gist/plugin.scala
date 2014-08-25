@@ -145,6 +145,9 @@ pluginDef.addGlobalAction("POST", "/gist/_new"){ (request, response, context) =>
   }
 }
 
+/**
+ * Updates Gist
+ */
 pluginDef.addGlobalAction("POST", "/gist/.*/edit"){ (request, response, context) =>
   val dim = request.getRequestURI.split("/")
   val userName = dim(2)
@@ -203,6 +206,9 @@ pluginDef.addGlobalAction("GET", "/gist/.*/delete"){ (request, response, context
   }
 }
 
+/**
+ * Swicth Gist to secret
+ */
 pluginDef.addGlobalAction("GET", "/gist/.*/secret"){ (request, response, context) =>
   val dim = request.getRequestURI.split("/")
   val userName = dim(2)
@@ -215,6 +221,9 @@ pluginDef.addGlobalAction("GET", "/gist/.*/secret"){ (request, response, context
   Redirect(s"${context.path}/gist/${userName}/${repoName}")
 }
 
+/**
+ * Swicth Gist to public
+ */
 pluginDef.addGlobalAction("GET", "/gist/.*/public"){ (request, response, context) =>
   val dim = request.getRequestURI.split("/")
   val userName = dim(2)

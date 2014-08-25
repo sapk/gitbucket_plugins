@@ -20,10 +20,11 @@
   </li>
 }
 
-<div class="container body">
+<div class="container">
   <div class="head">
+    @avatar(gist("USER_NAME"), 24)
     <a href="@path/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
-    <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
+    <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")" class="strong">@gist("TITLE")</a>
     @if(gist("PRIVATE").toBoolean){
       <span class="label label-warning">Secret</span>
     }
@@ -34,12 +35,12 @@
       </div>
     }
   </div>
-  <div class="muted">
+  <div class="muted" style="margin-top: -5px; margin-left: 26px;">
     Created at @gist("REGISTERED_DATE")
   </div>
 </div>
 <hr style="margin-bottom: 20px;"/>
-<div class="container">
+<div class="container body">
   <div style="width: 170px;" class="pull-right">
     <ul class="sidemenu">
       <li style="height: 12px"><div class="gradient pull-left" style="height: 12px"></div></li>
@@ -48,7 +49,7 @@
     </ul>
   </div>
   <div style="margin-right: 180px;">
-    <div>
+    <div style="margin-bottom: 10px;">
       @gist("DESCRIPTION")
     </div>
     @files.map { case (fileName, content) =>

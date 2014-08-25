@@ -9,16 +9,17 @@
   @gists.map { gist =>
     <div>
       <div>
-        <a href="/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
-        <a href="/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
+        @avatar(gist("USER_NAME"), 20)
+        <a class="strong" href="/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
+        <a class="strong" href="/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
         @if(gist("PRIVATE").toBoolean){
           <span class="label label-warning">Secret</span>
         }
       </div>
-      <div class="muted">
+      <div class="muted" style="margin-left: 22px;">
         Created at @gist("REGISTERED_DATE")
       </div>
-      <div>
+      <div style="margin-left: 22px; margin-top: 10px; margin-bottom: 10px;">
         @gist("DESCRIPTION")
       </div>
       <div>
