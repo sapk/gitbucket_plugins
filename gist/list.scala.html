@@ -8,6 +8,9 @@
     <div class="head">
       @avatar(gistUser.get.userName, 24)
       <span class="strong">@gistUser.get.fullName</span>
+      <div class="pull-right">
+        <a href="@path/@gistUser.get.userName" class="btn">@gistUser.get.userName on GitBucket</a>
+      </div>
     </div>
     <div class="muted" style="margin-top: -10px; margin-left: 30px;">
       @gistUser.get.userName
