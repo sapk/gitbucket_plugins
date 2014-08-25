@@ -1,4 +1,4 @@
-@(gist: Option[Map[String, String]], files: Seq[(String, util.JGitUtil.ContentInfo)])(implicit context: app.Context)
+@(gist: Option[Gist], files: Seq[(String, util.JGitUtil.ContentInfo)])(implicit context: app.Context)
 @import context._
 @import view.helpers._
 <div class="container">
@@ -9,23 +9,23 @@
   } else {
     @gist.map { x =>
       <div class="head">
-        @avatar(x("USER_NAME"), 24)
+        @avatar(gist.get.userName, 24)
         Editing
-        <a class="strong" href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")">@x("TITLE")</a>
-        @if(x("PRIVATE").toBoolean){
+        <a class="strong" href="@path/gist/@gist.get.userName/@gist.get.repositoryName">@gist.get.title</a>
+        @if(gist.get.isPrivate){
           <span class="label label-warning">Secret</span>
         }
         <div class="pull-right">
-          @if(x("PRIVATE").toBoolean){
-            <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/public" class="btn">Make public</a>
+          @if(gist.get.isPrivate){
+            <a href="@path/gist/@gist.get.userName/@gist.get.repositoryName/public" class="btn">Make public</a>
           } else {
-            <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/secret" class="btn">Make secret</a>
+            <a href="@path/gist/@gist.get.userName/@gist.get.repositoryName/secret" class="btn">Make secret</a>
           }
-          <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
+          <a href="@path/gist/@gist.get.userName/@gist.get.repositoryName/delete" class="btn" id="delete">Delete</a>
         </div>
       </div>
-      <div class="muted" style="margin-top: -5px; margin-left: 26px;">
-        Created at @x("REGISTERED_DATE")
+      <div class="muted" style="margin-top: -10px; margin-left: 30px;">
+        Created at @gist.get.registeredDate
       </div>
     }
   }
@@ -33,7 +33,7 @@
 <hr style="margin-bottom: 20px;"/>
 <div class="container body">
     <form id="form" method="POST" action="#">
-      <input type="text" name="description" id="description" style="width: 900px;" value="@gist.map(_("DESCRIPTION"))" placeholder="Snippet descriptions..."/>
+      <input type="text" name="description" id="description" style="width: 900px;" value="@gist.map(_.description)" placeholder="Snippet descriptions..."/>
       <div id="editors">
         @files.zipWithIndex.map { case ((fileName, content), i) =>
           @editor(i, fileName, content)
@@ -42,13 +42,13 @@
       <div>
         <input type="button" value="Add file" class="btn" id="add_file">
         <div class="pull-right">
-            @gist.map { x =>
-              <a href="@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")" class="btn">Cancel</a>
-              <input type="submit" value="Update" class="btn btn-success submit_snippet" id="update_snippet">
-            }.getOrElse {
-              <input type="submit" value="Create private Snippet" class="btn submit_snippet" id="create_private_snippet">
-              <input type="submit" value="Create public Snippet" class="btn submit_snippet" id="create_public_snippet">
-            }
+          @if(gist.isDefined){
+            <a href="@path/gist/@gist.get.userName/@gist.get.repositoryName" class="btn">Cancel</a>
+            <input type="submit" value="Update" class="btn btn-success submit_snippet" id="update_snippet">
+          } else {
+            <input type="submit" value="Create private Snippet" class="btn submit_snippet" id="create_private_snippet">
+            <input type="submit" value="Create public Snippet" class="btn submit_snippet" id="create_public_snippet">
+          }
         </div>
       </div>
       @if(gist.isEmpty){
@@ -83,8 +83,8 @@ $(function(){
   });
 
   $('#update_snippet').click(function(){
-    @gist.map { x =>
-      $('#form').attr('action', '@path/gist/@x("USER_NAME")/@x("REPOSITORY_NAME")/edit')
+    @gist.map { gist =>
+      $('#form').attr('action', '@path/gist/@gist.userName/@gist.repositoryName/edit')
     }
   });
 

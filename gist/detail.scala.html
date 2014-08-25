@@ -1,4 +1,4 @@
-@(active: String, gist: Map[String, String], files: Seq[(String, String)], editable: Boolean)(implicit context: app.Context)
+@(active: String, gist: Gist, files: Seq[(String, String)], editable: Boolean)(implicit context: app.Context)
 @import context._
 @import view.helpers._
 
@@ -22,21 +22,21 @@
 
 <div class="container">
   <div class="head">
-    @avatar(gist("USER_NAME"), 24)
-    <a href="@path/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
-    <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")" class="strong">@gist("TITLE")</a>
-    @if(gist("PRIVATE").toBoolean){
+    @avatar(gist.userName, 24)
+    <a href="@path/gist/@gist.userName">@gist.userName</a> /
+    <a href="@path/gist/@gist.userName/@gist.repositoryName" class="strong">@gist.title</a>
+    @if(gist.isPrivate){
       <span class="label label-warning">Secret</span>
     }
     @if(editable){
       <div class="pull-right">
-        <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/edit" class="btn">Edit</a>
-        <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/delete" class="btn" id="delete">Delete</a>
+        <a href="@path/gist/@gist.userName/@gist.repositoryName/edit" class="btn">Edit</a>
+        <a href="@path/gist/@gist.userName/@gist.repositoryName/delete" class="btn" id="delete">Delete</a>
       </div>
     }
   </div>
-  <div class="muted" style="margin-top: -5px; margin-left: 26px;">
-    Created at @gist("REGISTERED_DATE")
+  <div class="muted" style="margin-top: -10px; margin-left: 30px;">
+    Created at @gist.registeredDate
   </div>
 </div>
 <hr style="margin-bottom: 20px;"/>
@@ -44,13 +44,13 @@
   <div style="width: 170px;" class="pull-right">
     <ul class="sidemenu">
       <li style="height: 12px"><div class="gradient pull-left" style="height: 12px"></div></li>
-      @sidemenu(s"${gist("USER_NAME")}/${gist("REPOSITORY_NAME")}",           "code"    , "Code")
-      @sidemenu(s"${gist("USER_NAME")}/${gist("REPOSITORY_NAME")}/revisions", "revision", "Revision")
+      @sidemenu(s"${gist.userName}/${gist.repositoryName}",           "code"    , "Code")
+      @sidemenu(s"${gist.userName}/${gist.repositoryName}/revisions", "revision", "Revision")
     </ul>
   </div>
   <div style="margin-right: 180px;">
     <div style="margin-bottom: 10px;">
-      @gist("DESCRIPTION")
+      @gist.description
     </div>
     @files.map { case (fileName, content) =>
       <table class="table table-bordered blobview">
@@ -58,7 +58,7 @@
           <th style="font-weight: normal;">
             @fileName
             <div class="pull-right">
-              <a href="@path/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")/raw/@fileName" class="btn btn-mini">Raw</a>
+              <a href="@path/gist/@gist.userName/@gist.repositoryName/raw/@fileName" class="btn btn-mini">Raw</a>
             </div>
           </th>
         </tr>

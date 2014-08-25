@@ -43,7 +43,7 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
     val count = db.select(
       "SELECT COUNT(*) AS COUNT FROM GIST WHERE PRIVATE = FALSE").head.apply("COUNT").toInt
 
-    val gists = result.map { gist =>
+    val gists: Seq[(Gist, String)] = result.map { gist =>
       val userName = gist("USER_NAME")
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
@@ -54,14 +54,14 @@ pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          gist + ("CODE" -> source)
+          (toGist(gist), source)
         }
       } else {
-        gist + ("CODE" -> "Repository is not found!")
+        (toGist(gist), "Repository is not found!")
       }
     }
 
-    list(gists, page, page * Limit < count)(context)
+    list(None, gists, page, page * Limit < count)(context)
   }
 }
 
@@ -85,7 +85,7 @@ pluginDef.addGlobalAction("GET", "/gist/.*/edit"){ (request, response, context) 
           file.name -> JGitUtil.getContentInfo(git, file.name, file.id)
         }
 
-        edit(Some(gist), files)(context)
+        edit(Some(toGist(gist)), files)(context)
       }
     }
   } else {
@@ -275,7 +275,7 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
       (gists, count)
     }
 
-    val gists = result._1.map { gist =>
+    val gists: Seq[(Gist, String)] = result._1.map { gist =>
       val repoName = gist("REPOSITORY_NAME")
       val gitdir = new File(rootdir, userName + "/" + repoName)
       if(gitdir.exists){
@@ -285,14 +285,16 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
               .split("\n").take(9).mkString("\n")
           }.head
 
-          gist + ("CODE" -> source)
+          (toGist(gist), source)
         }
       } else {
-        gist + ("CODE" -> "Repository is not found!")
+        (toGist(gist), "Repository is not found!")
       }
     }
 
-    list(gists, page, page * Limit < result._2)(context) // TODO Paging
+    val fullName = db.select("SELECT FULL_NAME FROM ACCOUNT WHERE USER_NAME = ?", userName).head.apply("FULL_NAME")
+
+    list(Some(GistUser(userName, fullName)), gists, page, page * Limit < result._2)(context) // TODO Paging
 
   } else {
     val userName = dim(2)
@@ -300,12 +302,10 @@ pluginDef.addGlobalAction("GET", "/gist/.*"){ (request, response, context) =>
     val gitdir = new File(rootdir, userName + "/" + repoName)
     if(gitdir.exists){
       ControlUtil.using(Git.open(gitdir)){ git =>
-        val gist: Map[String, String] =
-          db.select("""
-            SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?
-          """, userName, repoName).head
+        val gist = toGist(db.select(
+          "SELECT * FROM GIST WHERE USER_NAME = ? AND REPOSITORY_NAME = ?", userName, repoName).head)
 
-        if(!gist("PRIVATE").toBoolean || context.loginAccount.exists(x => x.isAdmin || x.userName == userName)){
+        if(!gist.isPrivate || context.loginAccount.exists(x => x.isAdmin || x.userName == userName)){
           val files: Seq[(String, String)] = JGitUtil.getFileList(git, "master", ".").map { file =>
             file.name -> StringUtil.convertFromByteArray(JGitUtil.getContentFromId(git, file.id, true).get)
           }
@@ -343,6 +343,29 @@ def getFileParameters(request: javax.servlet.http.HttpServletRequest, flatten: B
     }
   }
 }
+
+case class GistUser(userName: String, fullName: String)
+
+case class Gist(
+  userName: String,
+  repositoryName: String,
+  isPrivate: Boolean,
+  title: String,
+  description: String,
+  registeredDate: String,
+  updatedDate: String
+)
+
+def toGist(map: Map[String, String]): Gist =
+  Gist(
+    userName       = map("USER_NAME"),
+    repositoryName = map("REPOSITORY_NAME"),
+    isPrivate      = map("PRIVATE").toBoolean,
+    title          = map("TITLE"),
+    description    = map("DESCRIPTION"),
+    registeredDate = map("REGISTERED_DATE"),
+    updatedDate    = map("UPDATED_DATE")
+  )
 
 def commitFiles(git: Git, loginAccount: Account, message: String, files: Seq[(String, String)]): ObjectId = {
   val builder  = DirCache.newInCore.builder()

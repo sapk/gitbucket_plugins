@@ -1,29 +1,39 @@
-@(gists: Seq[Map[String, String]], page: Int, hasNext: Boolean)(implicit context: app.Context)
+@(gistUser: Option[GistUser], gists: Seq[(Gist, String)], page: Int, hasNext: Boolean)(implicit context: app.Context)
 @import context._
 @import view.helpers._
 <div class="container">
-  <h1>GitBucket Snippets</h1>
+  @if(gistUser.isEmpty){
+    <div class="head">GitBucket Snippets</div>
+  } else {
+    <div class="head">
+      @avatar(gistUser.get.userName, 24)
+      <span class="strong">@gistUser.get.fullName</span>
+    </div>
+    <div class="muted" style="margin-top: -10px; margin-left: 30px;">
+      @gistUser.get.userName
+    </div>
+  }
 </div>
 <hr style="margin-bottom: 20px;"/>
 <div class="container body">
-  @gists.map { gist =>
+  @gists.map { case (gist, code) =>
     <div>
       <div>
-        @avatar(gist("USER_NAME"), 20)
-        <a class="strong" href="/gist/@gist("USER_NAME")">@gist("USER_NAME")</a> /
-        <a class="strong" href="/gist/@gist("USER_NAME")/@gist("REPOSITORY_NAME")">@gist("TITLE")</a>
-        @if(gist("PRIVATE").toBoolean){
+        @avatar(gist.userName, 20)
+        <a class="strong" href="/gist/@gist.userName">@gist.userName</a> /
+        <a class="strong" href="/gist/@gist.userName/@gist.repositoryName">@gist.title</a>
+        @if(gist.isPrivate){
           <span class="label label-warning">Secret</span>
         }
       </div>
       <div class="muted" style="margin-left: 22px;">
-        Created at @gist("REGISTERED_DATE")
+        Created at @gist.registeredDate
       </div>
       <div style="margin-left: 22px; margin-top: 10px; margin-bottom: 10px;">
-        @gist("DESCRIPTION")
+        @gist.description
       </div>
       <div>
-        <pre class="prettyprint linenums" style="padding-left: 25px;">@Html(gist("CODE"))</pre>
+        <pre class="prettyprint linenums" style="padding-left: 25px;">@Html(code)</pre>
       </div>
     </div>
   }
