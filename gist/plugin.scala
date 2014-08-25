@@ -30,7 +30,11 @@ $('div.navbar div.nav-collapse').prepend($('<a href="/gist" class="username menu
  */
 pluginDef.addGlobalAction("GET", "/gist"){ (request, response, context) =>
   if(context.loginAccount.isDefined){
-    edit(None, Seq(("", JGitUtil.ContentInfo("text", None, Some("UTF-8")))))(context)
+    val gists = db.select("SELECT * FROM GIST WHERE USER_NAME = ? ORDER BY REGISTERED_DATE DESC LIMIT 4",
+      context.loginAccount.get.userName).map(toGist)
+
+    edit(gists, None, Seq(("", JGitUtil.ContentInfo("text", None, Some("UTF-8")))))(context)
+
   } else {
     val page = request.getParameter("page") match {
       case ""|null => 1
@@ -85,7 +89,7 @@ pluginDef.addGlobalAction("GET", "/gist/.*/edit"){ (request, response, context) 
           file.name -> JGitUtil.getContentInfo(git, file.name, file.id)
         }
 
-        edit(Some(toGist(gist)), files)(context)
+        edit(Nil, Some(toGist(gist)), files)(context)
       }
     }
   } else {

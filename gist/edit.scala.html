@@ -1,10 +1,20 @@
-@(gist: Option[Gist], files: Seq[(String, util.JGitUtil.ContentInfo)])(implicit context: app.Context)
+@(recent: Seq[Gist], gist: Option[Gist], files: Seq[(String, util.JGitUtil.ContentInfo)])(implicit context: app.Context)
 @import context._
 @import view.helpers._
 <div class="container">
   @if(gist.isEmpty){
-    <div class="head">
-      New snippet
+    <div>
+      <ul style="list-style: none; margin-left: 0px;">
+      @recent.map { gist =>
+        <li style="float: left; width: 200px;">
+          <a class="strong" href="@path/gist/@gist.userName/@gist.repositoryName">@gist.title</a>
+          <div class="muted">@gist.description</div>
+        </li>
+      }
+      </ul>
+      <div class="pull-right">
+        <a href="@path/gist/@context.loginAccount.get.userName" class="btn">Your Snippets</a>
+      </div>
     </div>
   } else {
     @gist.map { x =>
