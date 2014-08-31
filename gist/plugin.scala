@@ -383,7 +383,7 @@ def commitFiles(git: Git, loginAccount: Account, message: String, files: Seq[(St
   builder.finish()
 
   val commitId = JGitUtil.createNewCommit(git, inserter, headId, builder.getDirCache.writeTree(inserter),
-    loginAccount.fullName, loginAccount.mailAddress, message)
+    Constants.HEAD, loginAccount.fullName, loginAccount.mailAddress, message)
 
   inserter.flush()
   inserter.release()
