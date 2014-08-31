@@ -2,7 +2,7 @@ import plugin._
 
 val pluginDef = ScalaPlugin.define(id, version, author, url, description)
 
-pluginDef.addRepositoryAction("GET", "/issues/export", Security.Member()){ (request, response, repository) =>
+pluginDef.addRepositoryAction("GET", "/issues/export", Security.Member()){ (request, response, context, repository) =>
   db.select(s"""SELECT * FROM ISSUE WHERE
     USER_NAME       = '${repository.owner}' AND
     REPOSITORY_NAME = '${repository.name}'  AND
