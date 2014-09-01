@@ -22,7 +22,7 @@ val Limit = 10
  *
  */
 pluginDef.addJavaScript((path: String) => true, """
-$('div.navbar div.nav-collapse').prepend($('<a href="/gist" class="username menu">Snippets</a>'));
+$('a.brand').after($('<span style="float: left; margin-top: 10px;">|&nbsp;&nbsp;&nbsp;&nbsp;<a href="/gist" style="color: black;">Snippet</a></span>'));
 """)
 
 /**
