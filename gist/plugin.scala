@@ -240,6 +240,23 @@ pluginDef.addGlobalAction("GET", "/gist/.*/public"){ (request, response, context
   Redirect(s"${context.path}/gist/${userName}/${repoName}")
 }
 
+pluginDef.addGlobalAction("GET", "/gist/.*/raw/.*"){ (request, response, context) =>
+  val dim = request.getRequestURI.split("/")
+  val userName = dim(2)
+  val repoName = dim(3)
+  val fileName = dim(5)
+
+  val gitdir = new File(rootdir, userName + "/" + repoName)
+  if(gitdir.exists){
+    ControlUtil.using(Git.open(gitdir)){ git =>
+      JGitUtil.getFileList(git, "master", ".").collectFirst { case file if(file.name == fileName) =>
+        val bytes = JGitUtil.getContentFromId(git, file.id, true).get
+        val charset = StringUtil.detectEncoding(bytes)
+        RawData(s"text/plain; charset=${charset}", bytes)
+      }
+    }
+  } else None
+}
 
 /**
  * Displays specified Gist or the list of specified user's Gist
