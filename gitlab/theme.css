@@ -6,17 +6,35 @@ body.loaded {
 	transition:all 0.2s;
 }
 /**/
-div.container {
-	width: 1170px;
+
+@media (min-width: 1200px) {
+  div.container {
+      width: 1170px;
+  }
+}
+  
+@media (max-width: 767px) {
+  div.container {
+      width: auto;
+  }
 }
 body>hr {
 	/*display: none;*/
     opacity: 0;
 	margin-top: -10px;
 }
+a {
+  outline: none;
+  color: #446e9b;
+}
 
+a:hover {
+  text-decoration: underline;
+  color: #345578;
+}
 
 /* header */
+
 form#search {
     margin: 0;
     background: #f5f5f5;
@@ -25,14 +43,23 @@ form#search {
     margin-bottom: -45px;
 }
 
+@media (max-width: 767px) {
+  form#search {
+      margin: 0px -20px -45px;
+  }
+}
+
 .navbar div.navbar-inner {
 	background: #474D57;
 	border-bottom: 1px solid #373D47;
     height: 46px;
 }
 
-.navbar div.container {
-	width: 1170px;
+
+@media (min-width: 1200px) {
+  .navbar div.container {
+      width: 1170px;
+  }
 }
 
 .navbar a.brand {
@@ -95,7 +122,7 @@ form#search {
 }
 
 
-.navbar i:hover, .navbar .caret:hover {
+.navbar i:hover, .navbar .caret:hover,.navbar .dropdown-toggle:hover .caret,.navbar .dropdown-toggle:hover i {
     opacity: 1;
 }
 
@@ -128,8 +155,7 @@ body.loaded .navbar .header-menu.pull-right input[name=query] {
 .row-fluid>.span9>ul.nav.nav-tabs,
 body>.container>ul.nav.nav-tabs {
     background: #f5f5f5;
-    margin: 20px 0;
-    margin-top: 0;
+	margin: 0 0 20px 0;
     border-bottom: 1px solid #E9E9E9;
     height : 44px;
 }
@@ -142,28 +168,50 @@ body>.container>ul.nav.nav-tabs li>a{
     text-align: center;
     border: 0px;
     background: none;
+    text-shadow: 0 1px 1px white;
+    font-weight: bold;
+    font-size: 13px;
 }
+
+.row-fluid>.span8>ul.nav.nav-tabs li.active>a, 
+.row-fluid>.span9>ul.nav.nav-tabs li.active>a, 
+body>.container>ul.nav.nav-tabs li.active>a {
+    color: #517aa8;
+    padding: 12px 12px 10px 12px;
+    border-bottom: 3px solid #517aa8;
+}
+
+
+.row-fluid>.span8>ul.nav.nav-tabs li>a:hover,
+.row-fluid>.span9>ul.nav.nav-tabs li>a:hover,
+body>.container>ul.nav.nav-tabs li>a:hover{
+    padding: 12px 11px;
+}
+
 .row-fluid>.span8>ul.nav.nav-tabs li>a:hover,
 .row-fluid>.span9>ul.nav.nav-tabs li>a:hover,
 body>.container>ul.nav.nav-tabs li>a:hover {
     border: 0px;
     background: none;
-    padding: 12px 13px 10px 13px;
+    padding: 12px 12px 10px 12px;
     color : #345e8b;
     border-bottom: 3px solid #345e8b;
 }
-.row-fluid>.span8>ul.nav.nav-tabs li.active>a, 
-.row-fluid>.span8>ul.nav.nav-tabs li.active>a:hover, 
-.row-fluid>.span9>ul.nav.nav-tabs li.active>a, 
-.row-fluid>.span9>ul.nav.nav-tabs li.active>a:hover, 
-body>.container>ul.nav.nav-tabs li.active>a, 
-body>.container>ul.nav.nav-tabs li.active>a:hover {
-    color: #446e9b;
-    font-weight: bold;
-    padding: 12px 13px 10px 13px;
-    border-bottom: 3px solid #446e9b;
+
+
+@media (max-width: 767px) {
+  .row-fluid>.span8>ul.nav.nav-tabs li>a,
+  .row-fluid>.span9>ul.nav.nav-tabs li>a,
+  body>.container>ul.nav.nav-tabs li>a{
+ 	    width: 90px;
+		padding: 12px 10px;
+  }
 }
 
+ul.nav.nav-tabs li.pull-right>a{
+	    width: 32px !important;
+}
+  
 /* New page */
 #gitlab-new form#search, body[id="gitlab-groups/new"] form#search {
 	background: transparent;
@@ -176,8 +224,14 @@ body[id="gitlab-groups/new"]>.container {
     border: 1px solid #CCC;
     border-radius: 3px;
     margin: 1em auto;
-    width: 1120px;
 }
+
+@media (min-width: 1200px) {
+  body[id="gitlab-groups/new"]>.container {
+      width: 1120px;
+  }
+}
+
 /* Sign-In page */
 #gitlab-signin form#search {
 	background: transparent;
@@ -221,7 +275,7 @@ body[id^=gitlab-admin] .span3>div.box {
 	margin-top: 65px;
 }
 
-body[id^=gitlab-admin] .span9 {
+body[id^=gitlab-admin] .span9, body[id^=gitlab-admin] form .span6, body[id^=gitlab-admin] form .span5 , body[id^=gitlab-admin] form .span7 {
 	margin-top: 65px;
 }
 body[id^="gitlab-admin/plugins"] .span9 {
