@@ -8,7 +8,7 @@ val pluginDef = ScalaPlugin.define(id, version, author, url, description)
 
 /* Ajoute la feuille de style globalement */
 pluginDef.addJavaScript((path: String) => true, """
-$('head').append($('<link href="/gitlab/theme.css" rel="stylesheet">')).append('<script src="/gitlab/script.js">');
+$('head').append('<link href="/gitlab/theme.css" rel="stylesheet">').append('<script type="text/javascript" src="/gitlab/script.js"><\/script>');
 """)
 
 /**

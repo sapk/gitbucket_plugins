@@ -233,7 +233,7 @@ body[id="gitlab-groups/new"]>.container {
 }
 
 /* Sign-In page */
-#gitlab-signin form#search {
+body[id^=gitlab-signin] form#search {
 	background: transparent;
 	padding-bottom: 35px;
 	border-bottom: none;
