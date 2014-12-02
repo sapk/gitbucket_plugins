@@ -26,17 +26,22 @@ if($("input[name='query']").length == 1){
 **/
 
 
-/** Switch to botostrap 3.2
-$('link[href$="assets/vendors/bootstrap/css/bootstrap.css"]').remove();
-$('link[href$="assets/vendors/bootstrap/css/bootstrap-responsive.css"]').remove();
+
+//.sidemenu TODO
+//$(".container>.head").parent()
+if($("div[style='width: 170px;']>ul.sidemenu").length == 1) {
+	var el = $(".sidemenu").parent();
+	$(".container>.head").parent().append("<ul class='nav nav-tabs gitlab-nav' >"+el.find(".sidemenu").hide().html()+"</ul>")
+	$(".body>.pull-right").removeClass("pull-right").addClass("well").addClass("gitlab-url")
+	$(".body>div[style='margin-right: 180px;']").attr("style","");
+    
+    $(".gitlab-url>.input-append").addClass("input-prepend")
+        		.prepend('<button class="btn" onclick="$(\'#repository-url-ssh\').click()" >SSH</button>')
+    		.prepend('<button class="btn" onclick="$(\'#repository-url-http\').click()" >HTTP</button>');
+    
+    $(".gitlab-url a[href$='tar.gz']").css("width","60px").text("TAR.GZ").prepend('<i class="icon-download-alt"></i>');
+    $(".gitlab-url a[href$='zip']").css("width","60px").text("ZIP").prepend('<i class="icon-download-alt"></i>');
 
 
-$('body').append($('<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">'))
-
-
-//			.append($('<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" rel="stylesheet">'));
-
-//			.append('<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js">');
-
-///bootstrap/3.2.0/css/bootstrap-theme.min.css
-*/
+}
+    

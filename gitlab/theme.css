@@ -185,14 +185,6 @@ body>.dashboard-nav a.active {
     border-bottom: 3px solid #517aa8 !important;
 }
 
-/*
-.row-fluid>.span8>ul.nav.nav-tabs li>a:hover,
-.row-fluid>.span9>ul.nav.nav-tabs li>a:hover,
-body>.container>ul.nav.nav-tabs li>a:hover,
-body>.dashboard-nav a:hover {
-    padding: 12px 11px;
-}
-*/
 .row-fluid>.span8>ul.nav.nav-tabs li>a:hover,
 .row-fluid>.span9>ul.nav.nav-tabs li>a:hover,
 body>.container>ul.nav.nav-tabs li>a:hover,
@@ -212,6 +204,14 @@ body>.dashboard-nav a:hover {
  	    width: 90px;
 		padding: 12px 10px;
   }
+}
+
+body > .container > ul.nav.nav-tabs.gitlab-nav {
+	margin: -48px 54px !important;
+}
+
+body > .container > ul.nav.nav-tabs.gitlab-nav li > a {
+	width: 150px !important;
 }
 
 ul.nav.nav-tabs li.pull-right>a{
@@ -314,11 +314,9 @@ body[id^="gitlab-admin/users"] .span9 > .table-bordered{
 /* Old maybe for file like readme.md
 .container.body>div[style="margin-right: 50px;"] ul.nav.nav-tabs.fill-width.pull-left {
   border: 1px solid #CCC;
-  /* margin-bottom: 1em; */
   background: #EEE;
   text-shadow: 0 1px 1px #fff;
   color: #333333;
-  /* padding: 10px 15px; */
 }
 .container.body>div[style="margin-right: 50px;"] ul.nav.nav-tabs.fill-width.pull-left h1.wiki-title {
 	margin: 6px 10px;
@@ -327,3 +325,36 @@ body[id^="gitlab-admin/users"] .span9 > .table-bordered{
 	margin: 8px 10px;
 }
 */
+
+.gitlab-url{
+	display : block;
+    width:98% !important;
+    padding: 5px 1%;
+}
+.gitlab-url>div{
+	display : inline-block !important;
+    margin-top: 0px !important;
+}
+.gitlab-url>div[style='margin-top: 10px;']{
+	float : right;
+    padding-left: 6px;
+}
+
+.gitlab-url>.small{
+	display:none !important;
+}
+.gitlab-url>.input-append{
+	/*width:40%;*/
+    /* TODO */
+    width: 65%;
+	margin-right: -500px;
+}
+
+.gitlab-url>.input-append>input#repository-url{
+	width: 85%;
+}
+.gitlab-url>.input-append>button {
+    height: 26px;
+    font-size: 10px;
+    padding: 0px 6px;
+}
